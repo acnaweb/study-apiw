@@ -1,6 +1,8 @@
 package com.github.acnaweb.study_apiw.controller;
 
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.github.acnaweb.study_apiw.dto.ProdutoRequestCreate;
 import com.github.acnaweb.study_apiw.dto.ProdutoRequestUpdate;
+import com.github.acnaweb.study_apiw.dto.ProdutoResponse;
 import com.github.acnaweb.study_apiw.model.Produto;
 import com.github.acnaweb.study_apiw.service.ProdutoService;
 
@@ -26,31 +29,54 @@ public class ControllerProduto {
     private ProdutoService produtoService;
 
     @PostMapping
-    public ResponseEntity<Produto> create(@RequestBody ProdutoRequestCreate dto) {        
+    public ResponseEntity<ProdutoResponse> create(@RequestBody ProdutoRequestCreate dto) {        
         Produto produto = produtoService.save(dto);
-        return  ResponseEntity.status(201).body(produto);
+        ProdutoResponse response = new ProdutoResponse();
+        response.setId(produto.getId());
+        response.setNome(produto.getNome());
+        return  ResponseEntity.status(201).body(response);
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Produto> update(@PathVariable Long id,
+    public ResponseEntity<ProdutoResponse> update(@PathVariable Long id,
                         @RequestBody ProdutoRequestUpdate dto) {
         return produtoService.update(id, dto)
-            .map(ResponseEntity::ok)
+            .map(produto -> {
+                ProdutoResponse response = new ProdutoResponse();
+                response.setId(produto.getId());
+                response.setNome(produto.getNome());
+                return ResponseEntity.ok(response);
+            })
             .orElse(ResponseEntity.notFound().build());
     }
    
     @GetMapping("{id}")
-    public ResponseEntity<Produto> findById(@PathVariable Long id) {
+    public ResponseEntity<ProdutoResponse> findById(@PathVariable Long id) {
         return produtoService.findById(id)
-            .map(ResponseEntity::ok)
+            .map(produto -> {
+                ProdutoResponse response = new ProdutoResponse();
+                response.setId(produto.getId());
+                response.setNome(produto.getNome());                
+                return ResponseEntity.ok(response);
+            })
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<Produto>> findAll() {
-        return ResponseEntity.ok(produtoService.findAll());
-    }
+    public ResponseEntity<List<ProdutoResponse>> findAll() {
 
+        List<ProdutoResponse> lista = produtoService.findAll()
+            .stream()
+            .map(produto -> {
+                ProdutoResponse response = new ProdutoResponse();
+                response.setId(produto.getId());
+                response.setNome(produto.getNome());                
+                return response;
+            })
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(lista);
+    }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
