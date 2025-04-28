@@ -37,13 +37,15 @@ public class ProdutoService {
         return produtoRepository.findAll();
     }
 
-    public Produto findById(Long id) {
-        Optional<Produto> opt = produtoRepository.findById(id);
-
-        if (opt.isPresent()) {
-            return opt.get();
-        }
-        return null;
+    public Optional<Produto> findById(Long id) {
+        return  produtoRepository.findById(id);
     }
 
+    public boolean delete(Long id) {
+        if (produtoRepository.existsById(id)) {
+            produtoRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }

@@ -38,21 +38,28 @@ public class ControllerProduto {
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
+   
+    @GetMapping("{id}")
+    public ResponseEntity<Produto> findById(@PathVariable Long id) {
+        return produtoService.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping
     public ResponseEntity<List<Produto>> findAll() {
         return ResponseEntity.ok(produtoService.findAll());
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<Produto> findById(@PathVariable Long id) {
-        Produto produto = produtoService.findById(id);
-        return ResponseEntity.status(200).body(produto);
-    }
 
-    @DeleteMapping
-    public ResponseEntity<Void> delete() {
-        return ResponseEntity.status(204).build();
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+
+        if (produtoService.delete(id)) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }                
     }
 
 }
